@@ -1,14 +1,14 @@
 # vinext-starter
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Plantilla full-stack limpia basada en
+[vinext](https://github.com/cloudflare/vinext), con soporte opcional para
+Cloudflare D1 y Drizzle.
 
-## Prerequisites
+## Requisitos
 
 - Node.js `>=22.13.0`
 
-## Quick Start
+## Inicio rápido
 
 ```bash
 npm install
@@ -16,28 +16,45 @@ npm run dev
 npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+Esta plantilla no usa `wrangler.jsonc`.
 
-## Included Shape
+## Qué incluye la estructura
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+- Edita el código de la app dentro de `app/`
+- `.openai/hosting.json` declara bindings opcionales de Sites para D1 y R2
+- `vite.config.ts` simula los bindings declarados en desarrollo local
+- `db/schema.ts` inicia intencionalmente vacío
+- `examples/d1/` contiene una superficie de ejemplo opcional para D1
+- `drizzle.config.ts` permite generar migraciones locales cuando se necesite
 
-## Workspace Auth Headers
+## Qué hace este proyecto
 
-OpenAI workspace sites can read the current user's email from
+Este repositorio levanta una tienda web llamada **Ultra Rápidos Tech**.
+
+- `app/page.tsx` renderiza el componente principal de la tienda.
+- `app/Storefront.tsx` contiene la interfaz completa: catálogo, filtros por
+  categoría, carrito de cotización y enlace de pedido por correo.
+- `app/layout.tsx` define metadatos globales (título, descripción, ícono) y
+  la estructura base HTML.
+- `app/chatgpt-auth.ts` incluye utilidades de autenticación con ChatGPT para
+  leer identidad desde headers y construir rutas seguras de sign-in/sign-out.
+
+En resumen: es una base lista para una tienda de accesorios tecnológicos con
+UI en React/Next y preparada para integrarse con hosting y autenticación en
+Cloudflare/OpenAI.
+
+## Headers de autenticación del workspace
+
+Los sitios de OpenAI Workspace pueden leer el correo del usuario actual desde
 `oai-authenticated-user-email`.
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
+Los sitios autenticados con SIWC también pueden recibir
+`oai-authenticated-user-full-name` cuando el perfil SIWC del usuario tenga un
+claim `name` no vacío. El nombre completo llega codificado como UTF-8
+percent-encoded y viene acompañado del header
 `oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
 
-Treat the full name as optional and fall back to email when it is absent:
+Toma el nombre completo como opcional y usa el correo como fallback si no está:
 
 ```tsx
 import { headers } from "next/headers";
@@ -58,40 +75,41 @@ export default async function Home() {
 }
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+## Sign-In opcional con ChatGPT (gestionado por Dispatch)
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+Importa los helpers de `app/chatgpt-auth.ts` cuando el sitio necesite sign-in
+con ChatGPT (opcional u obligatorio):
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+- Usa `getChatGPTUser()` para UI opcionalmente autenticada.
+- Usa `requireChatGPTUser(returnTo)` para páginas server-rendered que deban
+  redirigir visitantes anónimos a Sign in with ChatGPT.
+- Usa `chatGPTSignInPath(returnTo)` y `chatGPTSignOutPath(returnTo)` para
+  enlaces o acciones desde el navegador.
+- Pasa una ruta relativa del mismo origen en `returnTo` para el destino tras
+  iniciar/cerrar sesión. El helper valida y codifica de forma segura.
+- Marca páginas protegidas con `export const dynamic = "force-dynamic"` porque
+  dependen de headers de identidad por request.
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+Dispatch gestiona `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`,
+las cookies OAuth y la inyección de headers de identidad. No implementes rutas
+de app para esos paths reservados. Las rutas que no importan ni llaman el
+helper siguen siendo compatibles con tráfico anónimo.
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+SIWC solo establece identidad; no prueba membresía de workspace. Para
+restricciones globales, usa controles de acceso de la plataforma Sites o aplica
+validaciones explícitas en servidor (membership/allowlist).
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
+Usa SIWC para páginas de cuenta, paneles por usuario, registros guardados y
+acciones de escritura asociadas al usuario actual de ChatGPT. Deja anónimo el
+contenido público.
 
-## Useful Commands
+## Comandos útiles
 
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+- `npm run dev`: inicia desarrollo local
+- `npm run build`: valida la salida de build de vinext
+- `npm run db:generate`: genera migraciones de Drizzle tras cambios de esquema
 
-## Learn More
+## Más información
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+- [Documentación de vinext](https://github.com/cloudflare/vinext)
+- [Guía de Drizzle para D1](https://orm.drizzle.team/docs/get-started/d1-new)
